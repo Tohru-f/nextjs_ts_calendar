@@ -7,11 +7,10 @@ type PropsType = {
 
 const currentMonth = format(new Date(), "yyyy/MM");
 
+// 移動月が当月かどうかで遷移先のURLを決める
 export const compareDesignatedMonths = ({ today, signal }: PropsType) => {
   if (format(today, "yyyy/MM") === currentMonth) {
     return "/";
-  } else if (signal === "&gt;") {
-    return `/month/${getYear(today)}/${getMonth(today) + 1}`;
   } else {
     return `/month/${getYear(today)}/${getMonth(today) + 1}`;
   }

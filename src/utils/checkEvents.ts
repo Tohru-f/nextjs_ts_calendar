@@ -8,6 +8,7 @@ type PropsType = {
   currentMonth: number;
 };
 
+// 日付に対してイベントが登録されているかを確認
 export const checkEvents = ({
   events,
   day,

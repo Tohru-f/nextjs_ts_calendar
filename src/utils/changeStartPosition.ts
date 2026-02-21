@@ -5,6 +5,7 @@ type PropsType = {
 
 const defaultClass = "text-center border border-gray-300 flex flex-col";
 
+// 初日の曜日に従ってclassNameの内容を変えてスタート位置を決める
 export const changeStartPosition = ({ day, firstDay }: PropsType): string => {
   if (day === "1") {
     switch (firstDay) {
