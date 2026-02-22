@@ -1,30 +1,18 @@
-"use client";
-
-import React, { useEffect } from "react";
+import React from "react";
 import Link from "next/link";
 import { weekdayList } from "@/constants/weekdayList";
-import { changeStartPosition } from "@/utils/changeStartPosition";
 import {
   addMonths,
   eachDayOfInterval,
   format,
   getDay,
+  getMonth,
   getYear,
   lastDayOfMonth,
   startOfMonth,
 } from "date-fns";
 import { monthList } from "@/constants/monthList";
-import { checkEvents } from "@/utils/checkEvents";
-
-import { compareDesignatedMonths } from "@/utils/compareDesignatedMonths";
-import { useModal } from "@/contexts/ModalContexts";
-
-import { useDisplay } from "@/contexts/DisplayContexts";
-import { useRouter } from "next/navigation";
-import { options } from "@/constants/options";
-import { eventTypeZod } from "@/types/eventType";
-import EventEditAndDeleteModal from "@/components/EventEditAndDeleteModal";
-import EventCreateModal from "@/components/EventCreateModal";
+import DataAndEventsComponent from "@/components/DateAndEventsComponent";
 
 type PropsType = {
   params: Promise<{ year: string; month: string }>;
@@ -32,37 +20,11 @@ type PropsType = {
 };
 
 const MonthDisplayPage = ({ params, searchParams }: PropsType) => {
-  const {
-    events,
-    setEvents,
-    showEventModal,
-    showEventChangeModal,
-    designatedDate,
-    designatedId,
-    openModalHandler,
-    openChangeModalHandler,
-    closeModalHandler,
-    closeChangeModalHandler,
-  } = useModal();
-
-  // 月と週の表示を切り替えるためのstate変数・set関数
-  const { selectedOption, setSelectedOption } = useDisplay();
+  // クライアントコンポーネントを呼び出す時にCSSを切り替えるための変数
+  const isMonth: boolean = true;
 
   // パラメーターから年と月を取得する
   const { year, month } = React.use(params);
-
-  // 他のURLから遷移してきた時にクエリパラメーターからイベントを受け取り、JSONからオブジェクトに変換
-  const { receivedEvents } = React.use(searchParams);
-  const parsedEvents: eventTypeZod[] = receivedEvents
-    ? JSON.parse(receivedEvents)
-    : [];
-
-  // 初期レンダリングでイベントが渡ってきていたらset関数で更新して表示に使う
-  useEffect(() => {
-    if (parsedEvents) {
-      setEvents(parsedEvents);
-    }
-  }, []);
 
   // パラメーターから渡ってきたtodayを取り出す
   let { today } = React.use(searchParams);
@@ -91,22 +53,6 @@ const MonthDisplayPage = ({ params, searchParams }: PropsType) => {
   // ヘッダーに表示する月(英名)と年を作成
   const current_month_english: string = month_english + " " + getYear(today);
 
-  const router = useRouter();
-
-  // 月表示と週表示を切り替える
-  const handleOptionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    if (event.target.value === "month") {
-      router.push(
-        `/month/${passedYear}/${passedMonth + 1}?receivedEvents=${JSON.stringify(events)}`,
-      );
-    } else {
-      router.push(
-        `/week/${passedYear}/${passedMonth + 1}/${format(today, "dd")}?receivedEvents=${JSON.stringify(events)}`,
-      );
-    }
-    setSelectedOption(event.target.value);
-  };
-
   return (
     <div className="flex h-screen flex-col bg-linear-to-br from-indigo-50 via-purple-50 to-pink-50">
       <header className="flex h-10 w-full gap-4 bg-white px-10 py-2">
@@ -118,8 +64,8 @@ const MonthDisplayPage = ({ params, searchParams }: PropsType) => {
           <div className="flex items-center justify-around gap-4">
             <Link
               href={{
-                pathname: "/",
-                query: { receivedEvents: JSON.stringify(parsedEvents) },
+                pathname: `/month/${getYear(new Date())}/${getMonth(new Date()) + 1}`,
+                query: { today: new Date().toLocaleDateString() },
               }}
               className="rounded-4xl border px-4 py-1"
             >
@@ -128,12 +74,8 @@ const MonthDisplayPage = ({ params, searchParams }: PropsType) => {
             <Link
               suppressHydrationWarning
               href={{
-                pathname: compareDesignatedMonths({
-                  today: addMonths(today, -1),
-                  signal: "&lt;",
-                }),
+                pathname: `/month/${getYear(addMonths(today, -1))}/${getMonth(addMonths(today, -1)) + 1}`,
                 query: {
-                  receivedEvents: JSON.stringify(events),
                   today: addMonths(today, -1).toLocaleDateString(),
                 },
               }}
@@ -143,12 +85,8 @@ const MonthDisplayPage = ({ params, searchParams }: PropsType) => {
             <Link
               suppressHydrationWarning
               href={{
-                pathname: compareDesignatedMonths({
-                  today: addMonths(today, 1),
-                  signal: "&gt;",
-                }),
+                pathname: `/month/${getYear(addMonths(today, 1))}/${getMonth(addMonths(today, 1)) + 1}`,
                 query: {
-                  receivedEvents: JSON.stringify(events),
                   today: addMonths(today, 1).toLocaleDateString(),
                 },
               }}
@@ -158,17 +96,12 @@ const MonthDisplayPage = ({ params, searchParams }: PropsType) => {
             <span className="text-xl">{current_month_english}</span>
           </div>
           <div className="flex items-center">
-            <select
-              value={selectedOption}
-              onChange={handleOptionChange}
+            <Link
+              href={`/week/${passedYear}/${passedMonth + 1}/${format(today, "dd")}`}
               className="rounded-4xl border px-4 py-1"
             >
-              {options.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+              Week
+            </Link>
           </div>
         </div>
       </header>
@@ -179,67 +112,17 @@ const MonthDisplayPage = ({ params, searchParams }: PropsType) => {
           </div>
         ))}
         {formattedDays.map((day) => (
-          <div
+          <DataAndEventsComponent
+            day={day}
+            firstDay={firstDay}
+            passedYear={passedYear}
+            passedMonth={passedMonth}
+            today={today}
+            isMonth={isMonth}
             key={day}
-            className={changeStartPosition({ day, firstDay })}
-            onClick={() =>
-              openModalHandler(
-                new Date(
-                  passedYear,
-                  passedMonth,
-                  parseInt(day),
-                ).toLocaleDateString(),
-              )
-            }
-          >
-            <div>
-              <span>{day}</span>
-            </div>
-            <div className="flex flex-col">
-              {events &&
-                checkEvents({
-                  events,
-                  day,
-                  selectedDay: today,
-                  currentMonth: passedMonth,
-                }).map((event) => (
-                  <span
-                    key={event.id}
-                    className="rounded-md bg-blue-300 text-black"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openChangeModalHandler(
-                        new Date(
-                          passedYear,
-                          passedMonth,
-                          parseInt(day),
-                        ).toLocaleDateString(),
-                        event.id,
-                      );
-                    }}
-                  >
-                    {event.title}
-                  </span>
-                ))}
-            </div>
-          </div>
+          />
         ))}
       </div>
-      <EventCreateModal
-        show={showEventModal}
-        close={closeModalHandler}
-        date={designatedDate}
-        setEvents={setEvents}
-        events={events}
-      />
-      <EventEditAndDeleteModal
-        show={showEventChangeModal}
-        close={closeChangeModalHandler}
-        date={designatedDate}
-        id={designatedId}
-        setEvents={setEvents}
-        events={events}
-      />
     </div>
   );
 };
