@@ -3,11 +3,12 @@
 import { useError } from "@/contexts/ErrorContexts";
 import { eventSchema, eventTypeZod } from "@/types/eventType";
 import React, { useEffect } from "react";
+import EventBodyComponent from "./EventBodyComponent";
 
 type PropsType = {
   show: boolean;
   close: () => void;
-  date: string;
+  date: Date;
   events: eventTypeZod[];
   setEvents: React.Dispatch<React.SetStateAction<eventTypeZod[]>>;
 };
@@ -52,6 +53,7 @@ export const EventCreateModal = ({
     title = "";
   };
 
+  // Escapeキーを押した時にモーダルを閉じる
   useEffect(() => {
     const onKeyDownEsc = (event: KeyboardEvent) => {
       if (show && event.key === "Escape") {
@@ -64,45 +66,29 @@ export const EventCreateModal = ({
   }, [show, close]);
 
   return (
-    <>
-      {show && (
-        <div className="fixed inset-0 z-1000 flex items-center justify-center bg-gray-100 opacity-80">
-          <div className="z-1001 flex flex-col items-center justify-center rounded-2xl bg-black p-4">
-            <div className="ml-auto flex justify-end">
-              <span className="text-white" onClick={close}>
-                ✖︎
-              </span>
-            </div>
-            <span className="text-white">イベント名</span>
-            <input
-              className="rounded-md border border-white text-white"
-              type="text"
-              placeholder="イベント"
-              name="title"
-              value={title}
-              onChange={handleChange}
-              autoFocus
-            />
-            {errorMessage && <p className="text-red-500">{errorMessage}</p>}
-            <span className="text-white">日付</span>
-            <input
-              className="rounded-md border border-white text-white"
-              type="text"
-              placeholder="年/月/日"
-              name="date"
-              value={date}
-              readOnly
-            />
-            <button
-              className="border-color-white m-5 rounded-2xl border px-3 py-1 text-white"
-              onClick={handleRegistration}
-            >
-              登録
-            </button>
-          </div>
-        </div>
-      )}
-    </>
+    <div
+      className="fixed inset-0 z-1000 flex items-center justify-center bg-gray-100 opacity-80"
+      onClick={close}
+    >
+      <div
+        className="pointer-events-auto z-1001 flex flex-col items-center justify-center rounded-2xl bg-black p-4"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <EventBodyComponent
+          title={title}
+          handleChange={handleChange}
+          date={date}
+          errorMessage={errorMessage}
+          close={close}
+        />
+        <button
+          className="border-color-white m-5 rounded-2xl border px-3 py-1 text-white"
+          onClick={handleRegistration}
+        >
+          登録
+        </button>
+      </div>
+    </div>
   );
 };
 

@@ -7,7 +7,7 @@ export const eventSchema = z.object({
     .string()
     .min(1, { message: "入力必須です" })
     .max(12, { message: "タイトルは12文字以内で入力してください" }),
-  date: z.string(),
+  date: z.date(),
 });
 
 export type eventTypeZod = z.infer<typeof eventSchema>;

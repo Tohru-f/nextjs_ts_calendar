@@ -7,12 +7,13 @@ import EventCreateModal from "./EventCreateModal";
 import EventEditAndDeleteModal from "./EventEditAndDeleteModal";
 import { useModal } from "@/contexts/ModalContexts";
 import { compareDates } from "@/utils/compareDates";
+import { getDate } from "date-fns";
 
 type PropsType = {
-  day: string;
+  day: Date;
   firstDay: number;
-  passedYear: number;
-  passedMonth: number;
+  year: string;
+  month: string;
   today: Date;
   isMonth: boolean;
 };
@@ -20,8 +21,8 @@ type PropsType = {
 const DataAndEventsComponent = ({
   day,
   firstDay,
-  passedYear,
-  passedMonth,
+  year,
+  month,
   today,
   isMonth,
 }: PropsType) => {
@@ -42,7 +43,6 @@ const DataAndEventsComponent = ({
     <>
       <div
         suppressHydrationWarning
-        key={day}
         className={
           isMonth
             ? changeStartPosition({ day, firstDay })
@@ -50,11 +50,7 @@ const DataAndEventsComponent = ({
         }
         onClick={() =>
           openModalHandler(
-            new Date(
-              passedYear,
-              passedMonth,
-              parseInt(day),
-            ).toLocaleDateString(),
+            new Date(parseInt(year), parseInt(month) - 1, getDate(day)),
           )
         }
         role="button"
@@ -65,13 +61,13 @@ const DataAndEventsComponent = ({
             className={
               compareDates(
                 new Date(),
-                new Date(passedYear, passedMonth, parseInt(day)),
+                new Date(parseInt(year), parseInt(month) - 1, getDate(day)),
               )
                 ? "rounded-full border border-solid border-orange-500 bg-orange-500 px-2 py-2"
                 : ""
             }
           >
-            {day}
+            {getDate(day)}
           </span>
         </div>
         <div className="flex flex-col">
@@ -80,7 +76,7 @@ const DataAndEventsComponent = ({
               events,
               day,
               selectedDay: today,
-              currentMonth: passedMonth,
+              currentMonth: parseInt(month) - 1,
             }).map((event) => (
               <button
                 suppressHydrationWarning
@@ -89,11 +85,7 @@ const DataAndEventsComponent = ({
                 onClick={(e) => {
                   e.stopPropagation();
                   openChangeModalHandler(
-                    new Date(
-                      passedYear,
-                      passedMonth,
-                      parseInt(day),
-                    ).toLocaleDateString(),
+                    new Date(parseInt(year), parseInt(month) - 1, getDate(day)),
                     event.id,
                   );
                 }}
@@ -103,21 +95,25 @@ const DataAndEventsComponent = ({
             ))}
         </div>
       </div>
-      <EventCreateModal
-        show={showEventModal}
-        close={closeModalHandler}
-        date={designatedDate}
-        setEvents={setEvents}
-        events={events}
-      />
-      <EventEditAndDeleteModal
-        show={showEventChangeModal}
-        close={closeChangeModalHandler}
-        date={designatedDate}
-        id={designatedId}
-        setEvents={setEvents}
-        events={events}
-      />
+      {showEventModal && (
+        <EventCreateModal
+          show={showEventModal}
+          close={closeModalHandler}
+          date={designatedDate}
+          setEvents={setEvents}
+          events={events}
+        />
+      )}
+      {showEventChangeModal && (
+        <EventEditAndDeleteModal
+          show={showEventChangeModal}
+          close={closeChangeModalHandler}
+          date={designatedDate}
+          id={designatedId}
+          setEvents={setEvents}
+          events={events}
+        />
+      )}
     </>
   );
 };

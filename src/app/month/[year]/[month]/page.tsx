@@ -2,56 +2,52 @@ import React from "react";
 import Link from "next/link";
 import { weekdayList } from "@/constants/weekdayList";
 import {
-  addMonths,
   eachDayOfInterval,
   format,
   getDay,
-  getMonth,
   getYear,
   lastDayOfMonth,
   startOfMonth,
 } from "date-fns";
 import { monthList } from "@/constants/monthList";
 import DataAndEventsComponent from "@/components/DateAndEventsComponent";
+import { nextMonthURL } from "@/utils/nextMonth";
+import { previousMonthURL } from "@/utils/previousMonth";
+import { monthOfTodayURL } from "@/utils/monthOfToday";
 
 type PropsType = {
   params: Promise<{ year: string; month: string }>;
-  searchParams: Promise<{ receivedEvents?: string; today: Date }>;
 };
 
-const MonthDisplayPage = ({ params, searchParams }: PropsType) => {
+const MonthDisplayPage = ({ params }: PropsType) => {
   // クライアントコンポーネントを呼び出す時にCSSを切り替えるための変数
   const isMonth: boolean = true;
 
   // パラメーターから年と月を取得する
   const { year, month } = React.use(params);
 
-  // パラメーターから渡ってきたtodayを取り出す
-  let { today } = React.use(searchParams);
-
-  // 取得したパラメーターから年を取り出してnumber型に変換
-  const passedYear: number = parseInt(year);
-
-  // 取得したパラメーターから月を取り出してnumber型に変換。月は0〜11で1月〜12月を表すので注意。そのために1を引く
-  const passedMonth: number = parseInt(month) - 1;
+  // 当月の基準となる初日の日付
+  const standardDate = new Date(`${year}/${month}/1`);
 
   // 当月の初日を取得する
-  const firstDate: string = format(startOfMonth(today), "dd");
+  const firstDate: string = format(startOfMonth(standardDate), "dd");
   // 当月の最終日を取得する
-  const lastDate: string = format(lastDayOfMonth(today), "dd");
-  // 当月の日付全てを配列として取得する
+  const lastDate: string = format(lastDayOfMonth(standardDate), "dd");
+  // 当月の日付全てを配列として取得する。数値ではなく文字列指定で実装すればコードを短くできる
   let currentDays: Date[] = eachDayOfInterval({
-    start: new Date(passedYear, passedMonth, parseInt(firstDate)),
-    end: new Date(passedYear, passedMonth, parseInt(lastDate)),
+    start: new Date(`${year}/${month}/${firstDate}`),
+    end: new Date(`${year}/${month}/${lastDate}`),
   });
-  // 取得したcurrentDaysを日付だけの配列に変換する
-  let formattedDays: string[] = currentDays.map((day) => format(day, "d"));
+
   // 当月の初日に当てられた曜日の番号を取得する
-  const firstDay: number = getDay(startOfMonth(today));
+  const firstDay: number = getDay(startOfMonth(standardDate));
+
   // 月から英名の月を選択
-  const month_english: string = monthList[passedMonth];
+  const month_english: string = monthList[parseInt(month) - 1];
+
   // ヘッダーに表示する月(英名)と年を作成
-  const current_month_english: string = month_english + " " + getYear(today);
+  const current_month_english: string =
+    month_english + " " + getYear(standardDate);
 
   return (
     <div className="flex h-screen flex-col bg-linear-to-br from-indigo-50 via-purple-50 to-pink-50">
@@ -63,33 +59,20 @@ const MonthDisplayPage = ({ params, searchParams }: PropsType) => {
         <div className="flex w-full justify-between">
           <div className="flex items-center justify-around gap-4">
             <Link
-              href={{
-                pathname: `/month/${getYear(new Date())}/${getMonth(new Date()) + 1}`,
-                query: { today: new Date().toLocaleDateString() },
-              }}
+              href={monthOfTodayURL()}
               className="rounded-4xl border px-4 py-1"
             >
               Today
             </Link>
             <Link
               suppressHydrationWarning
-              href={{
-                pathname: `/month/${getYear(addMonths(today, -1))}/${getMonth(addMonths(today, -1)) + 1}`,
-                query: {
-                  today: addMonths(today, -1).toLocaleDateString(),
-                },
-              }}
+              href={previousMonthURL({ standardDate })}
             >
               &lt;
             </Link>
             <Link
               suppressHydrationWarning
-              href={{
-                pathname: `/month/${getYear(addMonths(today, 1))}/${getMonth(addMonths(today, 1)) + 1}`,
-                query: {
-                  today: addMonths(today, 1).toLocaleDateString(),
-                },
-              }}
+              href={nextMonthURL({ standardDate })}
             >
               &gt;
             </Link>
@@ -97,7 +80,7 @@ const MonthDisplayPage = ({ params, searchParams }: PropsType) => {
           </div>
           <div className="flex items-center">
             <Link
-              href={`/week/${passedYear}/${passedMonth + 1}/${format(today, "dd")}`}
+              href={`/week/${year}/${month}/1`}
               className="rounded-4xl border px-4 py-1"
             >
               Week
@@ -111,15 +94,15 @@ const MonthDisplayPage = ({ params, searchParams }: PropsType) => {
             <span>{date}</span>
           </div>
         ))}
-        {formattedDays.map((day) => (
+        {currentDays.map((day) => (
           <DataAndEventsComponent
             day={day}
             firstDay={firstDay}
-            passedYear={passedYear}
-            passedMonth={passedMonth}
-            today={today}
+            year={year}
+            month={month}
+            today={standardDate}
             isMonth={isMonth}
-            key={day}
+            key={day.toString()}
           />
         ))}
       </div>

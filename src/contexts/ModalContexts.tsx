@@ -11,10 +11,10 @@ export type ModalContextType = {
   setEvents: React.Dispatch<React.SetStateAction<eventTypeZod[]>>;
   showEventModal: boolean;
   showEventChangeModal: boolean;
-  designatedDate: string;
+  designatedDate: Date;
   designatedId: number;
-  openModalHandler: (day: string) => void;
-  openChangeModalHandler: (day: string, id: number) => void;
+  openModalHandler: (day: Date) => void;
+  openChangeModalHandler: (day: Date, id: number) => void;
   closeModalHandler: () => void;
   closeChangeModalHandler: (signal: boolean) => void;
   updatedTitle: string;
@@ -30,7 +30,7 @@ export const ModalProvider = ({ children }: { children: React.ReactNode }) => {
   const [showEventModal, setShowEventModal] = useState<boolean>(false);
   const [showEventChangeModal, setShowEventChangeModal] =
     useState<boolean>(false);
-  const [designatedDate, setDesignatedDate] = useState<string>("");
+  const [designatedDate, setDesignatedDate] = useState<Date>(new Date());
   const [designatedId, setDesignatedId] = useState<number>(0);
 
   const currentEvent: eventTypeZod = findCurrentEvent(designatedId, events);
@@ -43,7 +43,7 @@ export const ModalProvider = ({ children }: { children: React.ReactNode }) => {
   const { errorMessage, setErrorMessage } = useError();
 
   // イベント作成のモーダルを表示する
-  const openModalHandler = (day: string) => {
+  const openModalHandler = (day: Date) => {
     setShowEventModal(true);
     setDesignatedDate(day);
   };
@@ -55,7 +55,7 @@ export const ModalProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   // イベント変更・削除のモーダルを表示する
-  const openChangeModalHandler = (day: string, id: number) => {
+  const openChangeModalHandler = (day: Date, id: number) => {
     setShowEventChangeModal(true);
     setDesignatedDate(day);
     setDesignatedId(id);

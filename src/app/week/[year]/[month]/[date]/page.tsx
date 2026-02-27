@@ -1,20 +1,15 @@
 import DataAndEventsComponent from "@/components/DateAndEventsComponent";
 import { monthList } from "@/constants/monthList";
 import { weekdayList } from "@/constants/weekdayList";
-import {
-  addWeeks,
-  eachDayOfInterval,
-  format,
-  getDay,
-  getMonth,
-  getYear,
-} from "date-fns";
+import { nextWeekURL } from "@/utils/nextWeek";
+import { previousWeekURL } from "@/utils/previousWeek";
+import { weekOfTodayURL } from "@/utils/weekOfToday";
+import { eachDayOfInterval, getDay, getYear } from "date-fns";
 import Link from "next/link";
 import React from "react";
 
 type PropsType = {
   params: Promise<{ year: string; month: string; date: string }>;
-  searchParams: Promise<{ receivedEvents?: string; today: Date }>;
 };
 
 const WeekDisplayPage = ({ params }: PropsType) => {
@@ -24,19 +19,11 @@ const WeekDisplayPage = ({ params }: PropsType) => {
   // パラメーターから年と月を取得する
   const { year, month, date } = React.use(params);
 
-  // 取得したパラメーターから年を取り出してnumber型に変換
-  const passedYear: number = parseInt(year);
-
-  // 取得したパラメーターから月を取り出してnumber型に変換。月は0〜11で1月〜12月を表すので注意。そのために1を引く
-  const passedMonth: number = parseInt(month) - 1;
-
-  let today: Date = new Date(`${year}/${month}/${date}`);
-  const currentDate: string = new Date().toLocaleDateString();
-  const checkDates =
-    format(today, "yyyy/MM") === format(currentDate, "yyyy/MM");
+  // paramsから受け取った基準となる日付
+  let standardDate: Date = new Date(`${year}/${month}/${date}`);
 
   // 該当週の初日に当てられた曜日の番号を取得する
-  const dayOfToday: number = getDay(today);
+  const dayOfToday: number = getDay(standardDate);
 
   // 表示する1週間の初日と最終日の位置を決める
   let gapDateForFirstDate: number = 0;
@@ -63,22 +50,26 @@ const WeekDisplayPage = ({ params }: PropsType) => {
   }
 
   // 該当週の日付全てを配列として取得する。各月の最小 or 最大の日付を±の超過で過ぎてもDate関数で次月の日付を生成
+  // 日付の取得には数値記入した内容から行う。1より少ない数字や31など(各月の最終日)を超える値は月を跨いだ日付を取得できる
+  // 文字列で日付を指定・取得する場合は上記の機能は実現できない。
   let currentDays: Date[] = eachDayOfInterval({
     start: new Date(
-      passedYear,
-      passedMonth,
+      parseInt(year),
+      parseInt(month) - 1,
       parseInt(date) - gapDateForFirstDate,
     ),
-    end: new Date(passedYear, passedMonth, parseInt(date) + gapDateForLastDate),
+    end: new Date(
+      parseInt(year),
+      parseInt(month) - 1,
+      parseInt(date) + gapDateForLastDate,
+    ),
   });
 
-  // 取得したcurrentDaysを日付だけの配列に変換する
-  let formattedDays: string[] = currentDays.map((day) => format(day, "d"));
-
   // 月から英名の月を選択
-  const month_english: string = monthList[passedMonth];
+  const month_english: string = monthList[parseInt(month) - 1];
   // ヘッダーに表示する月(英名)と年を作成
-  const current_month_english: string = month_english + " " + getYear(today);
+  const current_month_english: string =
+    month_english + " " + getYear(standardDate);
 
   return (
     <div className="flex h-screen flex-col bg-linear-to-br from-indigo-50 via-purple-50 to-pink-50">
@@ -90,40 +81,25 @@ const WeekDisplayPage = ({ params }: PropsType) => {
         <div className="flex w-full justify-between">
           <div className="flex items-center justify-around gap-4">
             <Link
-              href={{
-                pathname: `/week/${getYear(new Date())}/${getMonth(new Date()) + 1}/${format(new Date(), "dd")}`,
-              }}
+              href={weekOfTodayURL()}
               className="rounded-4xl border px-4 py-1"
             >
               Today
             </Link>
             <Link
               suppressHydrationWarning
-              href={{
-                pathname: `/week/${getYear(addWeeks(today, -1))}/${getMonth(addWeeks(today, -1)) + 1}/${format(addWeeks(today, -1), "dd")}`,
-                query: {
-                  today: addWeeks(today, -1).toLocaleDateString(),
-                },
-              }}
+              href={previousWeekURL({ standardDate })}
             >
               &lt;
             </Link>
-            <Link
-              suppressHydrationWarning
-              href={{
-                pathname: `/week/${getYear(addWeeks(today, 1))}/${getMonth(addWeeks(today, 1)) + 1}/${format(addWeeks(today, 1), "dd")}`,
-                query: {
-                  today: addWeeks(today, 1).toLocaleDateString(),
-                },
-              }}
-            >
+            <Link suppressHydrationWarning href={nextWeekURL({ standardDate })}>
               &gt;
             </Link>
             <span className="text-xl">{current_month_english}</span>
           </div>
           <div className="flex items-center">
             <Link
-              href={`/month/${passedYear}/${passedMonth + 1}?today=${today.toLocaleDateString()}`}
+              href={`/month/${year}/${month}`}
               className="rounded-4xl border px-4 py-1"
             >
               Month
@@ -137,15 +113,15 @@ const WeekDisplayPage = ({ params }: PropsType) => {
             <span>{date}</span>
           </div>
         ))}
-        {formattedDays.map((day) => (
+        {currentDays.map((day) => (
           <DataAndEventsComponent
             day={day}
             firstDay={dayOfToday}
-            passedYear={passedYear}
-            passedMonth={passedMonth}
-            today={today}
+            year={year}
+            month={month}
+            today={standardDate}
             isMonth={isMonth}
-            key={day}
+            key={day.toString()}
           />
         ))}
       </div>

@@ -1,10 +1,10 @@
 import { eventTypeZod } from "@/types/eventType";
-import { getYear } from "date-fns";
+import { getDate, getYear } from "date-fns";
 
 type PropsType = {
   events: eventTypeZod[];
-  day: string;
-  selectedDay: Date;
+  day: Date;
+  selectedDay: Date; // 年の取得に使用
   currentMonth: number;
 };
 
@@ -17,11 +17,11 @@ export const checkEvents = ({
 }: PropsType) => {
   return events?.filter(
     (event) =>
-      event.date ===
+      event.date.toLocaleDateString() ===
       new Date(
         getYear(selectedDay),
         currentMonth,
-        parseInt(day),
+        getDate(day),
       ).toLocaleDateString(),
   );
 };
