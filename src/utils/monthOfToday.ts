@@ -1,4 +1,4 @@
-import { today } from "@/constants/today";
+import { today } from "@/constants/calendar";
 import { getMonth, getYear } from "date-fns";
 
 // 今月に遷移するためのURLを取得

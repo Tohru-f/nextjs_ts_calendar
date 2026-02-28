@@ -1,10 +1,10 @@
 import { addMonths, getMonth, getYear } from "date-fns";
 
 type PropsType = {
-  standardDate: Date;
+  firstDate: Date;
 };
 
 // 次月へ遷移するためのURLを返却
-export const nextMonthURL = ({ standardDate }: PropsType) => {
-  return `/month/${getYear(addMonths(standardDate, 1))}/${getMonth(addMonths(standardDate, 1)) + 1}`;
+export const nextMonthURL = ({ firstDate }: PropsType) => {
+  return `/month/${getYear(addMonths(firstDate, 1))}/${getMonth(addMonths(firstDate, 1)) + 1}`;
 };

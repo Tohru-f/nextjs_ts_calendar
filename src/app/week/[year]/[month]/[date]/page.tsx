@@ -1,6 +1,6 @@
 import DataAndEventsComponent from "@/components/DateAndEventsComponent";
-import { monthList } from "@/constants/monthList";
-import { weekdayList } from "@/constants/weekdayList";
+import { MONTH_NAMES_EN, WEEK_NAMES_EN } from "@/constants/calendar";
+
 import { nextWeekURL } from "@/utils/nextWeek";
 import { previousWeekURL } from "@/utils/previousWeek";
 import { weekOfTodayURL } from "@/utils/weekOfToday";
@@ -52,7 +52,7 @@ const WeekDisplayPage = ({ params }: PropsType) => {
   // 該当週の日付全てを配列として取得する。各月の最小 or 最大の日付を±の超過で過ぎてもDate関数で次月の日付を生成
   // 日付の取得には数値記入した内容から行う。1より少ない数字や31など(各月の最終日)を超える値は月を跨いだ日付を取得できる
   // 文字列で日付を指定・取得する場合は上記の機能は実現できない。
-  let currentDays: Date[] = eachDayOfInterval({
+  let currentDates: Date[] = eachDayOfInterval({
     start: new Date(
       parseInt(year),
       parseInt(month) - 1,
@@ -66,7 +66,7 @@ const WeekDisplayPage = ({ params }: PropsType) => {
   });
 
   // 月から英名の月を選択
-  const month_english: string = monthList[parseInt(month) - 1];
+  const month_english: string = MONTH_NAMES_EN[parseInt(month) - 1];
   // ヘッダーに表示する月(英名)と年を作成
   const current_month_english: string =
     month_english + " " + getYear(standardDate);
@@ -108,20 +108,17 @@ const WeekDisplayPage = ({ params }: PropsType) => {
         </div>
       </header>
       <div className="m-4 grid flex-1 grid-cols-7 overflow-hidden rounded-2xl bg-gray-50/80 shadow-xl">
-        {weekdayList.map((date) => (
+        {WEEK_NAMES_EN.map((date) => (
           <div key={date} className="text-center">
             <span>{date}</span>
           </div>
         ))}
-        {currentDays.map((day) => (
+        {currentDates.map((date) => (
           <DataAndEventsComponent
-            day={day}
-            firstDay={dayOfToday}
-            year={year}
+            date={date}
             month={month}
-            today={standardDate}
             isMonth={isMonth}
-            key={day.toString()}
+            key={date.toString()}
           />
         ))}
       </div>

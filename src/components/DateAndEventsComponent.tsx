@@ -1,31 +1,21 @@
 "use client";
 
 import React from "react";
-import { changeStartPosition } from "@/utils/changeStartPosition";
 import { checkEvents } from "@/utils/checkEvents";
 import EventCreateModal from "./EventCreateModal";
 import EventEditAndDeleteModal from "./EventEditAndDeleteModal";
 import { useModal } from "@/contexts/ModalContexts";
 import { compareDates } from "@/utils/compareDates";
 import { getDate } from "date-fns";
+import { today } from "@/constants/calendar";
 
 type PropsType = {
-  day: Date;
-  firstDay: number;
-  year: string;
+  date: Date;
   month: string;
-  today: Date;
   isMonth: boolean;
 };
 
-const DataAndEventsComponent = ({
-  day,
-  firstDay,
-  year,
-  month,
-  today,
-  isMonth,
-}: PropsType) => {
+const DataAndEventsComponent = ({ date, month, isMonth }: PropsType) => {
   const {
     events,
     setEvents,
@@ -45,38 +35,23 @@ const DataAndEventsComponent = ({
         suppressHydrationWarning
         className={
           isMonth
-            ? changeStartPosition({ day, firstDay })
+            ? "flex flex-col border border-gray-300 text-center"
             : "flex h-screen flex-col border border-gray-300 text-center"
         }
-        onClick={() =>
-          openModalHandler(
-            new Date(parseInt(year), parseInt(month) - 1, getDate(day)),
-          )
-        }
+        onClick={() => openModalHandler(date)}
         role="button"
         tabIndex={0}
       >
         <div className="p-1">
-          <span
-            className={
-              compareDates(
-                new Date(),
-                new Date(parseInt(year), parseInt(month) - 1, getDate(day)),
-              )
-                ? "rounded-full border border-solid border-orange-500 bg-orange-500 px-2 py-2"
-                : ""
-            }
-          >
-            {getDate(day)}
+          <span className={compareDates(today, date, month)}>
+            {getDate(date)}
           </span>
         </div>
         <div className="flex flex-col">
           {events &&
             checkEvents({
               events,
-              day,
-              selectedDay: today,
-              currentMonth: parseInt(month) - 1,
+              date,
             }).map((event) => (
               <button
                 suppressHydrationWarning
@@ -84,10 +59,7 @@ const DataAndEventsComponent = ({
                 className="rounded-md bg-blue-300 text-black"
                 onClick={(e) => {
                   e.stopPropagation();
-                  openChangeModalHandler(
-                    new Date(parseInt(year), parseInt(month) - 1, getDate(day)),
-                    event.id,
-                  );
+                  openChangeModalHandler(date, event.id);
                 }}
               >
                 {event.title}

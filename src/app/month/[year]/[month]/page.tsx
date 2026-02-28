@@ -1,19 +1,19 @@
 import React from "react";
 import Link from "next/link";
-import { weekdayList } from "@/constants/weekdayList";
+
 import {
   eachDayOfInterval,
-  format,
-  getDay,
+  endOfWeek,
   getYear,
   lastDayOfMonth,
-  startOfMonth,
+  startOfWeek,
 } from "date-fns";
-import { monthList } from "@/constants/monthList";
+
 import DataAndEventsComponent from "@/components/DateAndEventsComponent";
 import { nextMonthURL } from "@/utils/nextMonth";
 import { previousMonthURL } from "@/utils/previousMonth";
 import { monthOfTodayURL } from "@/utils/monthOfToday";
+import { MONTH_NAMES_EN, WEEK_NAMES_EN } from "@/constants/calendar";
 
 type PropsType = {
   params: Promise<{ year: string; month: string }>;
@@ -27,27 +27,20 @@ const MonthDisplayPage = ({ params }: PropsType) => {
   const { year, month } = React.use(params);
 
   // 当月の基準となる初日の日付
-  const standardDate = new Date(`${year}/${month}/1`);
+  const firstDate = new Date(`${year}/${month}/1`);
 
-  // 当月の初日を取得する
-  const firstDate: string = format(startOfMonth(standardDate), "dd");
-  // 当月の最終日を取得する
-  const lastDate: string = format(lastDayOfMonth(standardDate), "dd");
-  // 当月の日付全てを配列として取得する。数値ではなく文字列指定で実装すればコードを短くできる
-  let currentDays: Date[] = eachDayOfInterval({
-    start: new Date(`${year}/${month}/${firstDate}`),
-    end: new Date(`${year}/${month}/${lastDate}`),
+  // 当月の日付全てを配列として取得する。
+  let currentDates: Date[] = eachDayOfInterval({
+    start: startOfWeek(firstDate),
+    end: endOfWeek(lastDayOfMonth(firstDate)),
   });
 
-  // 当月の初日に当てられた曜日の番号を取得する
-  const firstDay: number = getDay(startOfMonth(standardDate));
-
   // 月から英名の月を選択
-  const month_english: string = monthList[parseInt(month) - 1];
+  const month_english: string = MONTH_NAMES_EN[parseInt(month) - 1];
 
   // ヘッダーに表示する月(英名)と年を作成
   const current_month_english: string =
-    month_english + " " + getYear(standardDate);
+    month_english + " " + getYear(firstDate);
 
   return (
     <div className="flex h-screen flex-col bg-linear-to-br from-indigo-50 via-purple-50 to-pink-50">
@@ -66,14 +59,11 @@ const MonthDisplayPage = ({ params }: PropsType) => {
             </Link>
             <Link
               suppressHydrationWarning
-              href={previousMonthURL({ standardDate })}
+              href={previousMonthURL({ firstDate })}
             >
               &lt;
             </Link>
-            <Link
-              suppressHydrationWarning
-              href={nextMonthURL({ standardDate })}
-            >
+            <Link suppressHydrationWarning href={nextMonthURL({ firstDate })}>
               &gt;
             </Link>
             <span className="text-xl">{current_month_english}</span>
@@ -89,20 +79,17 @@ const MonthDisplayPage = ({ params }: PropsType) => {
         </div>
       </header>
       <div className="m-4 grid flex-1 grid-cols-7 overflow-hidden rounded-2xl bg-gray-50/80 shadow-xl">
-        {weekdayList.map((date) => (
+        {WEEK_NAMES_EN.map((date) => (
           <div key={date} className="text-center">
             <span>{date}</span>
           </div>
         ))}
-        {currentDays.map((day) => (
+        {currentDates.map((date) => (
           <DataAndEventsComponent
-            day={day}
-            firstDay={firstDay}
-            year={year}
+            date={date}
             month={month}
-            today={standardDate}
             isMonth={isMonth}
-            key={day.toString()}
+            key={date.toString()}
           />
         ))}
       </div>
