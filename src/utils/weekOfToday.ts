@@ -1,4 +1,4 @@
-import { today } from "@/constants/calendar";
+import { today } from "@/constants";
 import { format, getMonth, getYear } from "date-fns";
 
 export const weekOfTodayURL = () => {

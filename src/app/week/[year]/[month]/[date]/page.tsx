@@ -1,7 +1,7 @@
 import DataAndEventsComponent from "@/components/DateAndEventsComponent";
 import EventCreateModal from "@/components/EventCreateModal";
 import EventEditAndDeleteModal from "@/components/EventEditAndDeleteModal";
-import { MONTH_NAMES_EN, WEEK_NAMES_EN } from "@/constants/calendar";
+import { MONTH_NAMES_EN, WEEK_NAMES_EN } from "@/constants";
 
 import { nextWeekURL } from "@/utils/nextWeek";
 import { previousWeekURL } from "@/utils/previousWeek";

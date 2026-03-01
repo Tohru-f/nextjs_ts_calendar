@@ -5,7 +5,7 @@ import { checkEvents } from "@/utils/checkEvents";
 import { useModal } from "@/contexts/ModalContexts";
 import { compareDates } from "@/utils/compareDates";
 import { getDate } from "date-fns";
-import { today } from "@/constants/calendar";
+import { today } from "@/constants";
 
 type PropsType = {
   date: Date;

@@ -1,4 +1,4 @@
-import { today } from "@/constants/calendar";
+import { today } from "@/constants";
 import { getMonth, getYear } from "date-fns";
 import { redirect } from "next/navigation";
 

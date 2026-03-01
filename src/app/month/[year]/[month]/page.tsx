@@ -13,7 +13,7 @@ import DataAndEventsComponent from "@/components/DateAndEventsComponent";
 import { nextMonthURL } from "@/utils/nextMonth";
 import { previousMonthURL } from "@/utils/previousMonth";
 import { monthOfTodayURL } from "@/utils/monthOfToday";
-import { MONTH_NAMES_EN, WEEK_NAMES_EN } from "@/constants/calendar";
+import { MONTH_NAMES_EN, WEEK_NAMES_EN } from "@/constants";
 import EventCreateModal from "@/components/EventCreateModal";
 import EventEditAndDeleteModal from "@/components/EventEditAndDeleteModal";
 
