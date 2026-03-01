@@ -8,7 +8,7 @@ export const compareDates = (d1: Date, d2: Date, month: string): string => {
     getDate(d1) === getDate(d2);
 
   if (isSameDay) {
-    return "rounded-full border border-solid border-orange-500 bg-orange-500 px-2 py-2";
+    return "rounded-full border border-solid border-orange-500 bg-orange-500 px-2 py-1";
   } else if (getMonth(d2) + 1 !== parseInt(month)) {
     return "text-gray-400";
   } else {

@@ -1,41 +1,25 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { eventSchema, eventTypeZod } from "@/types/eventType";
+import { eventSchema } from "@/types/eventType";
 import { useError } from "@/contexts/ErrorContexts";
 import { useModal } from "@/contexts/ModalContexts";
-import EventBodyComponent from "./EventBodyComponent";
+import EventForm from "./EventForm";
 
-type PropsType = {
-  show: boolean;
-  close: (signal: boolean) => void;
-  date: Date;
-  id: number;
-  events: eventTypeZod[];
-  setEvents: React.Dispatch<React.SetStateAction<eventTypeZod[]>>;
-};
-
-export const EventEditAndDeleteModal = ({
-  show,
-  close,
-  date,
-  id,
-  events,
-  setEvents,
-}: PropsType) => {
-  const { updatedTitle, setUpdatedTitle, currentEvent } = useModal();
-
+export const EventEditAndDeleteModal = () => {
   const { errorMessage, setErrorMessage } = useError();
 
-  // モーダルを閉じる時の引数として利用。trueの場合は変更内容を保存しないので、モーダルを閉じる時にタイトルを元に戻す。
-  let signal: boolean = true;
-
-  // currentEventを監視して、中身が入った場合はその中身のtitleを使ってupdatedTitleを更新
-  useEffect(() => {
-    if (currentEvent) {
-      setUpdatedTitle(currentEvent.title);
-    }
-  }, [currentEvent]);
+  const {
+    updatedTitle,
+    setUpdatedTitle,
+    currentEvent,
+    showEventChangeModal,
+    closeChangeModalHandler,
+    designatedDate,
+    designatedId,
+    setEvents,
+    events,
+  } = useModal();
 
   // タイトルを更新入力された内容をupdatedTitleに反映させる
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,16 +29,16 @@ export const EventEditAndDeleteModal = ({
   // 変更入力されたタイトルの内容をイベントの配列・オブジェクトに反映させる
   const handleEditRegistration = () => {
     const result = eventSchema.safeParse({
-      id,
+      id: designatedId,
       title: updatedTitle,
-      date,
+      date: designatedDate,
     });
     if (!result.success) {
       setErrorMessage(result.error.format().title?._errors);
       setUpdatedTitle(currentEvent.title);
       return;
     }
-    close((signal = false));
+    closeChangeModalHandler(false);
     const updatedEvents = events.map((event) => {
       if (event.id === currentEvent.id) {
         event.title = updatedTitle;
@@ -68,54 +52,58 @@ export const EventEditAndDeleteModal = ({
 
   // 選択したイベントを削除する。変更ボタンを押していたにので、表示されているタイトルは更新登録しない。
   const handleDelete = () => {
-    close((signal = false));
-    setEvents([...events.filter((event) => event.id !== id)]);
+    closeChangeModalHandler(false);
+    setEvents([...events.filter((event) => event.id !== designatedId)]);
   };
 
   // Escapeキーを押した時にモーダルを閉じる
   useEffect(() => {
     const onKeyDownEsc = (event: KeyboardEvent) => {
-      if (show && event.key === "Escape") {
+      if (showEventChangeModal && event.key === "Escape") {
         event.preventDefault();
-        close(signal);
+        closeChangeModalHandler(true);
       }
     };
     window.addEventListener("keydown", onKeyDownEsc);
     return () => window.removeEventListener("keydown", onKeyDownEsc);
-  }, [show, close]);
+  }, [showEventChangeModal, closeChangeModalHandler]);
 
   return (
-    <div
-      className="fixed inset-0 z-1000 flex items-center justify-center bg-gray-100 opacity-80"
-      onClick={() => close(signal)}
-    >
-      <div
-        className="pointer-events-auto z-1001 flex flex-col items-center justify-center rounded-2xl bg-black p-4"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <EventBodyComponent
-          title={updatedTitle}
-          handleChange={handleChange}
-          date={date}
-          errorMessage={errorMessage}
-          close={() => close(signal)}
-        />
-        <div className="flex">
-          <button
-            className="border-color-white m-5 rounded-2xl border px-3 py-1 text-white"
-            onClick={handleEditRegistration}
+    <>
+      {showEventChangeModal && (
+        <div
+          className="fixed inset-0 z-1000 flex items-center justify-center bg-gray-100 opacity-80"
+          onClick={() => closeChangeModalHandler(true)}
+        >
+          <div
+            className="pointer-events-auto z-1001 flex flex-col items-center justify-center rounded-2xl bg-black p-4"
+            onClick={(e) => e.stopPropagation()}
           >
-            変更
-          </button>
-          <button
-            className="border-color-white m-5 rounded-2xl border px-3 py-1 text-white"
-            onClick={handleDelete}
-          >
-            削除
-          </button>
+            <EventForm
+              title={updatedTitle}
+              handleChange={handleChange}
+              date={designatedDate}
+              errorMessage={errorMessage}
+              close={() => closeChangeModalHandler(true)}
+            />
+            <div className="flex">
+              <button
+                className="border-color-white m-5 rounded-2xl border px-3 py-1 text-white"
+                onClick={handleEditRegistration}
+              >
+                変更
+              </button>
+              <button
+                className="border-color-white m-5 rounded-2xl border px-3 py-1 text-white"
+                onClick={handleDelete}
+              >
+                削除
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      )}
+    </>
   );
 };
 

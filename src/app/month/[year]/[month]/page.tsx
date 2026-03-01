@@ -14,15 +14,14 @@ import { nextMonthURL } from "@/utils/nextMonth";
 import { previousMonthURL } from "@/utils/previousMonth";
 import { monthOfTodayURL } from "@/utils/monthOfToday";
 import { MONTH_NAMES_EN, WEEK_NAMES_EN } from "@/constants/calendar";
+import EventCreateModal from "@/components/EventCreateModal";
+import EventEditAndDeleteModal from "@/components/EventEditAndDeleteModal";
 
 type PropsType = {
   params: Promise<{ year: string; month: string }>;
 };
 
 const MonthDisplayPage = ({ params }: PropsType) => {
-  // クライアントコンポーネントを呼び出す時にCSSを切り替えるための変数
-  const isMonth: boolean = true;
-
   // パラメーターから年と月を取得する
   const { year, month } = React.use(params);
 
@@ -30,17 +29,16 @@ const MonthDisplayPage = ({ params }: PropsType) => {
   const firstDate = new Date(`${year}/${month}/1`);
 
   // 当月の日付全てを配列として取得する。
-  let currentDates: Date[] = eachDayOfInterval({
+  const currentDates: Date[] = eachDayOfInterval({
     start: startOfWeek(firstDate),
     end: endOfWeek(lastDayOfMonth(firstDate)),
   });
 
   // 月から英名の月を選択
-  const month_english: string = MONTH_NAMES_EN[parseInt(month) - 1];
+  const monthNameEn: string = MONTH_NAMES_EN[parseInt(month) - 1];
 
   // ヘッダーに表示する月(英名)と年を作成
-  const current_month_english: string =
-    month_english + " " + getYear(firstDate);
+  const headerTitle: string = monthNameEn + " " + getYear(firstDate);
 
   return (
     <div className="flex h-screen flex-col bg-linear-to-br from-indigo-50 via-purple-50 to-pink-50">
@@ -66,7 +64,7 @@ const MonthDisplayPage = ({ params }: PropsType) => {
             <Link suppressHydrationWarning href={nextMonthURL({ firstDate })}>
               &gt;
             </Link>
-            <span className="text-xl">{current_month_english}</span>
+            <span className="text-xl">{headerTitle}</span>
           </div>
           <div className="flex items-center">
             <Link
@@ -88,11 +86,13 @@ const MonthDisplayPage = ({ params }: PropsType) => {
           <DataAndEventsComponent
             date={date}
             month={month}
-            isMonth={isMonth}
+            isMonth={true}
             key={date.toString()}
           />
         ))}
       </div>
+      <EventCreateModal />
+      <EventEditAndDeleteModal />
     </div>
   );
 };

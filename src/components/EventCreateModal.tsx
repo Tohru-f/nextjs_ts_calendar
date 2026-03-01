@@ -1,29 +1,24 @@
 "use client";
 
 import { useError } from "@/contexts/ErrorContexts";
-import { eventSchema, eventTypeZod } from "@/types/eventType";
+import { eventSchema } from "@/types/eventType";
 import React, { useEffect } from "react";
-import EventBodyComponent from "./EventBodyComponent";
+import EventForm from "./EventForm";
+import { useModal } from "@/contexts/ModalContexts";
 
-type PropsType = {
-  show: boolean;
-  close: () => void;
-  date: Date;
-  events: eventTypeZod[];
-  setEvents: React.Dispatch<React.SetStateAction<eventTypeZod[]>>;
-};
-
-export const EventCreateModal = ({
-  show,
-  close,
-  date,
-  events,
-  setEvents,
-}: PropsType) => {
+export const EventCreateModal = () => {
   let title!: string;
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     title = e.target.value;
   };
+
+  const {
+    showEventModal,
+    closeModalHandler,
+    designatedDate,
+    setEvents,
+    events,
+  } = useModal();
 
   const { errorMessage, setErrorMessage } = useError();
 
@@ -34,20 +29,20 @@ export const EventCreateModal = ({
     const result = eventSchema.safeParse({
       id: events.length + 1,
       title,
-      date,
+      date: designatedDate,
     });
     if (!result.success) {
       console.log(result.error.format().title?._errors);
       setErrorMessage(result.error.format().title?._errors);
       return;
     }
-    close();
+    closeModalHandler();
     setEvents([
       ...events,
       {
         id: events.length + 1,
         title,
-        date,
+        date: designatedDate,
       },
     ]);
     title = "";
@@ -56,39 +51,43 @@ export const EventCreateModal = ({
   // Escapeキーを押した時にモーダルを閉じる
   useEffect(() => {
     const onKeyDownEsc = (event: KeyboardEvent) => {
-      if (show && event.key === "Escape") {
+      if (showEventModal && event.key === "Escape") {
         event.preventDefault();
-        close();
+        closeModalHandler();
       }
     };
     window.addEventListener("keydown", onKeyDownEsc);
     return () => window.removeEventListener("keydown", onKeyDownEsc);
-  }, [show, close]);
+  }, [showEventModal, closeModalHandler]);
 
   return (
-    <div
-      className="fixed inset-0 z-1000 flex items-center justify-center bg-gray-100 opacity-80"
-      onClick={close}
-    >
-      <div
-        className="pointer-events-auto z-1001 flex flex-col items-center justify-center rounded-2xl bg-black p-4"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <EventBodyComponent
-          title={title}
-          handleChange={handleChange}
-          date={date}
-          errorMessage={errorMessage}
-          close={close}
-        />
-        <button
-          className="border-color-white m-5 rounded-2xl border px-3 py-1 text-white"
-          onClick={handleRegistration}
+    <>
+      {showEventModal && (
+        <div
+          className="fixed inset-0 z-1000 flex items-center justify-center bg-gray-100 opacity-80"
+          onClick={closeModalHandler}
         >
-          登録
-        </button>
-      </div>
-    </div>
+          <div
+            className="pointer-events-auto z-1001 flex flex-col items-center justify-center rounded-2xl bg-black p-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <EventForm
+              title={title}
+              handleChange={handleChange}
+              date={designatedDate}
+              errorMessage={errorMessage}
+              close={closeModalHandler}
+            />
+            <button
+              className="border-color-white m-5 rounded-2xl border px-3 py-1 text-white"
+              onClick={handleRegistration}
+            >
+              登録
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 

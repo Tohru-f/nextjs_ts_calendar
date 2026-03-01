@@ -33,14 +33,14 @@ export const ModalProvider = ({ children }: { children: React.ReactNode }) => {
   const [designatedDate, setDesignatedDate] = useState<Date>(new Date());
   const [designatedId, setDesignatedId] = useState<number>(0);
 
-  const currentEvent: eventTypeZod = findCurrentEvent(designatedId, events);
+  let currentEvent: eventTypeZod = findCurrentEvent(designatedId, events);
 
   const [updatedTitle, setUpdatedTitle] = useState<string>(
     currentEvent ? currentEvent.title : "",
   );
 
   // エラーメッセージの管理
-  const { errorMessage, setErrorMessage } = useError();
+  const { setErrorMessage } = useError();
 
   // イベント作成のモーダルを表示する
   const openModalHandler = (day: Date) => {
@@ -59,6 +59,8 @@ export const ModalProvider = ({ children }: { children: React.ReactNode }) => {
     setShowEventChangeModal(true);
     setDesignatedDate(day);
     setDesignatedId(id);
+    currentEvent = findCurrentEvent(id, events); // 対象のイベントを固定
+    setUpdatedTitle(currentEvent.title); // モーダルに表示するタイトルを取得・更新する
     setErrorMessage([]);
   };
 

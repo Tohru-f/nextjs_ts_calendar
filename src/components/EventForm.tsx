@@ -10,7 +10,7 @@ type PropsType = {
   close: () => void;
 };
 
-const EventBodyComponent = ({
+const EventForm = ({
   title,
   handleChange,
   date,
@@ -48,4 +48,4 @@ const EventBodyComponent = ({
   );
 };
 
-export default EventBodyComponent;
+export default EventForm;
