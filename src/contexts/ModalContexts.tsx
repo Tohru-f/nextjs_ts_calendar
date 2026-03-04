@@ -11,7 +11,7 @@ export type ModalContextType = {
   openModalHandler: (day: Date) => void;
   openChangeModalHandler: (day: Date, id: number, title: string) => void;
   closeModalHandler: () => void;
-  closeChangeModalHandler: (signal: boolean) => void;
+  closeChangeModalHandler: () => void;
   modalState: ModalState;
   setModalState: React.Dispatch<React.SetStateAction<ModalState>>;
 };

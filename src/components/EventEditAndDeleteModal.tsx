@@ -28,7 +28,10 @@ export const EventEditAndDeleteModal = () => {
   // 変更入力されたタイトルの内容をイベントの配列・オブジェクトに反映させる
   const handleEditRegistration = () => {
     if (modalState?.mode === "edit") {
-      let currentEvent: eventTypeZod = findCurrentEvent(modalState.id, events);
+      const currentEvent: eventTypeZod = findCurrentEvent(
+        modalState.id,
+        events,
+      );
       const result = eventSchema.safeParse({
         id: modalState.id,
         title: modalState.editingTitle,
@@ -38,7 +41,7 @@ export const EventEditAndDeleteModal = () => {
         setErrorMessage(result.error.format().title?._errors);
         return;
       }
-      closeChangeModalHandler(false);
+      closeChangeModalHandler();
       const updatedEvents = events.map((event) => {
         if (event.id === currentEvent.id) {
           event.title = modalState.editingTitle;
@@ -54,7 +57,7 @@ export const EventEditAndDeleteModal = () => {
   // 選択したイベントを削除する。変更ボタンを押していたにので、表示されているタイトルは更新登録しない。
   const handleDelete = () => {
     if (modalState?.mode === "edit") {
-      closeChangeModalHandler(false);
+      closeChangeModalHandler();
       setEvents([...events.filter((event) => event.id !== modalState.id)]);
     }
   };
@@ -64,7 +67,7 @@ export const EventEditAndDeleteModal = () => {
     const onKeyDownEsc = (event: KeyboardEvent) => {
       if (modalState?.mode === "edit" && event.key === "Escape") {
         event.preventDefault();
-        closeChangeModalHandler(true);
+        closeChangeModalHandler();
       }
     };
     window.addEventListener("keydown", onKeyDownEsc);
@@ -77,7 +80,7 @@ export const EventEditAndDeleteModal = () => {
       {modalState.mode === "edit" && (
         <div
           className="fixed inset-0 z-1000 flex items-center justify-center bg-gray-100 opacity-80"
-          onClick={() => closeChangeModalHandler(true)}
+          onClick={closeChangeModalHandler}
         >
           <div
             className="pointer-events-auto z-1001 flex flex-col items-center justify-center rounded-2xl bg-black p-4"
@@ -88,7 +91,7 @@ export const EventEditAndDeleteModal = () => {
               handleChange={handleChange}
               date={modalState.date}
               errorMessage={errorMessage}
-              close={() => closeChangeModalHandler(true)}
+              close={closeChangeModalHandler}
             />
             <div className="flex">
               <button
