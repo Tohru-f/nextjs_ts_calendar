@@ -2,67 +2,62 @@
 
 import { useError } from "@/contexts/ErrorContexts";
 import { eventSchema } from "@/types/eventType";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import EventForm from "./EventForm";
-import { useModal } from "@/contexts/ModalContexts";
+import { useEventModal } from "@/contexts/ModalContexts";
 
 export const EventCreateModal = () => {
-  let title!: string;
+  const [title, setTitle] = useState<string>("");
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    title = e.target.value;
+    setTitle(e.target.value);
   };
 
-  const {
-    showEventModal,
-    closeModalHandler,
-    designatedDate,
-    setEvents,
-    events,
-  } = useModal();
+  const { closeModalHandler, setEvents, events, modalState } = useEventModal();
 
   const { errorMessage, setErrorMessage } = useError();
 
   const handleRegistration = () => {
-    if (title == undefined) {
-      title = "";
-    }
-    const result = eventSchema.safeParse({
-      id: events.length + 1,
-      title,
-      date: designatedDate,
-    });
-    if (!result.success) {
-      console.log(result.error.format().title?._errors);
-      setErrorMessage(result.error.format().title?._errors);
-      return;
-    }
-    closeModalHandler();
-    setEvents([
-      ...events,
-      {
+    if (modalState?.mode === "create") {
+      const result = eventSchema.safeParse({
         id: events.length + 1,
         title,
-        date: designatedDate,
-      },
-    ]);
-    title = "";
+        date: modalState.date,
+      });
+      if (!result.success) {
+        console.log(result.error.format().title?._errors);
+        setErrorMessage(result.error.format().title?._errors);
+        return;
+      }
+      closeModalHandler();
+      setEvents([
+        ...events,
+        {
+          id: events.length + 1,
+          title,
+          date: modalState.date,
+        },
+      ]);
+      setTitle("");
+    }
   };
 
   // Escapeキーを押した時にモーダルを閉じる
   useEffect(() => {
     const onKeyDownEsc = (event: KeyboardEvent) => {
-      if (showEventModal && event.key === "Escape") {
+      if (modalState?.mode === "create" && event.key === "Escape") {
         event.preventDefault();
         closeModalHandler();
       }
     };
     window.addEventListener("keydown", onKeyDownEsc);
     return () => window.removeEventListener("keydown", onKeyDownEsc);
-  }, [showEventModal, closeModalHandler]);
+  }, [modalState?.mode, closeModalHandler]);
 
+  if (modalState == null || modalState.mode !== "create") return <></>;
   return (
     <>
-      {showEventModal && (
+      {modalState.mode === "create" && (
         <div
           className="fixed inset-0 z-1000 flex items-center justify-center bg-gray-100 opacity-80"
           onClick={closeModalHandler}
@@ -74,7 +69,7 @@ export const EventCreateModal = () => {
             <EventForm
               title={title}
               handleChange={handleChange}
-              date={designatedDate}
+              date={modalState.date}
               errorMessage={errorMessage}
               close={closeModalHandler}
             />

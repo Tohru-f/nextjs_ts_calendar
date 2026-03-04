@@ -2,10 +2,10 @@
 
 import React from "react";
 import { checkEvents } from "@/utils/checkEvents";
-import { useModal } from "@/contexts/ModalContexts";
 import { compareDates } from "@/utils/compareDates";
 import { getDate } from "date-fns";
 import { today } from "@/constants";
+import { useEventModal } from "@/contexts/ModalContexts";
 
 type PropsType = {
   date: Date;
@@ -14,7 +14,7 @@ type PropsType = {
 };
 
 const DataAndEventsComponent = ({ date, month, isMonth }: PropsType) => {
-  const { events, openModalHandler, openChangeModalHandler } = useModal();
+  const { events, openModalHandler, openChangeModalHandler } = useEventModal();
 
   return (
     <div
@@ -45,7 +45,7 @@ const DataAndEventsComponent = ({ date, month, isMonth }: PropsType) => {
               className="rounded-md bg-blue-300 text-black"
               onClick={(e) => {
                 e.stopPropagation();
-                openChangeModalHandler(date, event.id);
+                openChangeModalHandler(date, event.id, event.title);
               }}
             >
               {event.title}

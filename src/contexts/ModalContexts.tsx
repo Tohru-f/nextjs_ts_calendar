@@ -3,73 +3,63 @@
 import { createContext, useContext, useState } from "react";
 import { useError } from "./ErrorContexts";
 import { eventTypeZod } from "@/types/eventType";
-import { findCurrentEvent } from "@/utils/findCurrentEvent";
 
 // 各コンポーネントに渡す値の型定義
 export type ModalContextType = {
   events: eventTypeZod[];
   setEvents: React.Dispatch<React.SetStateAction<eventTypeZod[]>>;
-  showEventModal: boolean;
-  showEventChangeModal: boolean;
-  designatedDate: Date;
-  designatedId: number;
   openModalHandler: (day: Date) => void;
-  openChangeModalHandler: (day: Date, id: number) => void;
+  openChangeModalHandler: (day: Date, id: number, title: string) => void;
   closeModalHandler: () => void;
   closeChangeModalHandler: (signal: boolean) => void;
-  updatedTitle: string;
-  setUpdatedTitle: React.Dispatch<React.SetStateAction<string>>;
-  currentEvent: eventTypeZod;
+  modalState: ModalState;
+  setModalState: React.Dispatch<React.SetStateAction<ModalState>>;
 };
+
+export type ModalState =
+  | { mode: "create"; date: Date }
+  | { mode: "edit"; date: Date; id: number; editingTitle: string }
+  | null;
 
 // 意味のあるデフォルトがない時はとりあえずnullで対応
 const ModalContext = createContext<ModalContextType | null>(null);
 
-export const ModalProvider = ({ children }: { children: React.ReactNode }) => {
+export const EventModalProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
   const [events, setEvents] = useState<eventTypeZod[]>([]);
-  const [showEventModal, setShowEventModal] = useState<boolean>(false);
-  const [showEventChangeModal, setShowEventChangeModal] =
-    useState<boolean>(false);
-  const [designatedDate, setDesignatedDate] = useState<Date>(new Date());
-  const [designatedId, setDesignatedId] = useState<number>(0);
 
-  let currentEvent: eventTypeZod = findCurrentEvent(designatedId, events);
-
-  const [updatedTitle, setUpdatedTitle] = useState<string>(
-    currentEvent ? currentEvent.title : "",
-  );
+  const [modalState, setModalState] = useState<ModalState>(null);
 
   // エラーメッセージの管理
   const { setErrorMessage } = useError();
 
   // イベント作成のモーダルを表示する
-  const openModalHandler = (day: Date) => {
-    setShowEventModal(true);
-    setDesignatedDate(day);
+  const openModalHandler = (date: Date) => {
+    setModalState({ mode: "create", date });
   };
 
   // イベント作成のモーダルを閉じる
   const closeModalHandler = () => {
-    setShowEventModal(false);
+    setModalState(null);
     setErrorMessage([]);
   };
 
   // イベント変更・削除のモーダルを表示する
-  const openChangeModalHandler = (day: Date, id: number) => {
-    setShowEventChangeModal(true);
-    setDesignatedDate(day);
-    setDesignatedId(id);
-    currentEvent = findCurrentEvent(id, events); // 対象のイベントを固定
-    setUpdatedTitle(currentEvent.title); // モーダルに表示するタイトルを取得・更新する
+  const openChangeModalHandler = (
+    date: Date,
+    id: number,
+    editingTitle: string,
+  ) => {
+    setModalState({ mode: "edit", date, id, editingTitle });
     setErrorMessage([]);
   };
 
   // イベント変更・削除のモーダルを閉じる。変更ボタンを押していない場合はタイトルの内容を編集前に戻す
-  const closeChangeModalHandler = (signal: boolean) => {
-    setShowEventChangeModal(false);
-    if (signal) {
-      setUpdatedTitle(currentEvent.title);
-    }
+  const closeChangeModalHandler = () => {
+    setModalState(null);
   };
 
   // childrenを囲うことでchildrenに対してvalueを受け渡す
@@ -78,17 +68,12 @@ export const ModalProvider = ({ children }: { children: React.ReactNode }) => {
       value={{
         events,
         setEvents,
-        showEventModal,
-        showEventChangeModal,
-        designatedDate,
-        designatedId,
         openModalHandler,
         openChangeModalHandler,
         closeModalHandler,
         closeChangeModalHandler,
-        updatedTitle,
-        setUpdatedTitle,
-        currentEvent,
+        modalState,
+        setModalState,
       }}
     >
       {children}
@@ -97,7 +82,7 @@ export const ModalProvider = ({ children }: { children: React.ReactNode }) => {
 };
 
 // Providerの外でuseContext(ModalContext)を呼ぶとctxはnullになるので、エラーで潰しておく。
-export const useModal = () => {
+export const useEventModal = () => {
   const ctx = useContext(ModalContext);
   if (ctx === null)
     throw new Error("useModal must be used within ModalProvider");
