@@ -10,7 +10,7 @@ if (!!danger.github.pr) {
     isAllCheckPassed = false;
   }
   // PRにレビュアーが選択されているかを確認
-  if (!danger.github.pr.reviewers) {
+  if (!danger.github.pr.requested_reviewers) {
     warn("Reviewerが選択されていません");
     isAllCheckPassed = false;
   }
